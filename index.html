@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NGITUNG PIBAL PAK YOS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            width: 100px;
+        }
+        button {
+            padding: 5px 10px;
+            font-size: 16px;
+        }
+        #output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>NGITUNG PIBAL PAK YOS</h1>
+    <p><strong>KOMA-NYA PAKE TITIK</strong></p>
+    <p>Ex "57.5"</p>
+    <p>Masukkan urutan ke (n) : <input type="text" id="n"></p>
+    <p>Masukkan nilai Azimuth ke (n) dalam derajat: <input type="text" id="An"></p>
+    <p>Masukkan nilai Elevasi ke (n) dalam derajat: <input type="text" id="En"></p>
+    <p>Masukkan nilai Azimuth ke (n+1) dalam derajat: <input type="text" id="Am"></p>
+    <p>Masukkan nilai Elevasi ke (n+1) dalam derajat: <input type="text" id="Em"></p>
+    <button onclick="convert()">Hitung</button>
+
+    <div id="output"></div>
+
+    <script>
+        function to_radian(degree) {
+            return degree * Math.PI / 180;
+        }
+
+        function to_degree(radian) {
+            return radian * 180 / Math.PI;
+        }
+
+        function calculate_d(n, E) {
+            return ((2 * n - 1) * 250 * (1 / Math.tan(to_radian(E)))) / 202.67;
+        }
+
+        function calculate_ff(x, y) {
+            return (2 * Math.sqrt(x * x + y * y)).toFixed(3);
+        }
+
+        function calculate_alpha(x, y) {
+            var alpha = Math.atan(y / x);
+            return alpha.toFixed(3); // Mengubah menjadi 3 angka dibelakang koma
+            }
+
+
+        function calculate_dd(x, y, alpha) {
+            if (x > 0 && y > 0) {
+                return (90 - to_degree(alpha)).toFixed(3);
+            } else if (x < 0 && y > 0) {
+                return (270 + to_degree(alpha)).toFixed(3);
+            } else if (x > 0 && y < 0) {
+                return (90 + to_degree(alpha)).toFixed(3);
+            } else if (x < 0 && y < 0) {
+                return (270 - to_degree(alpha)).toFixed(3);
+            } else {
+                return "-1.000"; // invalid case
+            }
+        }
+
+        function convert() {
+            var n = parseInt(document.getElementById("n").value);
+            var An = parseFloat(document.getElementById("An").value);
+            var En = parseFloat(document.getElementById("En").value);
+            var m = n + 1;
+            var Am = parseFloat(document.getElementById("Am").value);
+            var Em = parseFloat(document.getElementById("Em").value);
+
+            var dn = calculate_d(n, En).toFixed(3);
+            var dm = calculate_d(m, Em).toFixed(3);
+
+            var x = (dn * Math.sin(to_radian(An)) - dm * Math.sin(to_radian(Am))).toFixed(3);
+            var y = (dn * Math.cos(to_radian(An)) - dm * Math.cos(to_radian(Am))).toFixed(3);
+
+            var ff = calculate_ff(x, y);
+            var alpha = calculate_alpha(x, y);
+
+            var dd = calculate_dd(x, y, alpha);
+
+            var sdd = parseInt(dd);
+            var sff = parseInt(ff);
+
+            var output = "";
+            output += "<p>Menentukan dn</p>";
+            output += "<p>dn = ((2 * n - 1) * 250 * (1 / tan(En))) / 202.67<br>";
+            output += "d" + n + " = ((2 * " + n + " - 1) * 250 * (1 / tan(" + En + "))) / 202.67 = " + dn + "</p>";
+            output += "<p>d" + m + " = ((2 * " + m + " - 1) * 250 * (1 / tan(" + Em + "))) / 202.67 = " + dm + "</p>";
+
+            output += "<p>Menentukan y</p>";
+            output += "<p>y = dn * cos(An) - d(n+1) * cos(An+1)<br>";
+            output += "y = " + dn + " * cos(" + An + ") - " + dm + " * cos(" + Am + ") = " + y + "</p>";
+
+            output += "<p>Menentukan x</p>";
+            output += "<p>x = dn * sin(An) - d(n+1) * sin(An+1)<br>";
+            output += "x = " + dn + " * sin(" + An + ") - " + dm + " * sin(" + Am + ") = " + x + "</p>";
+
+            output += "<p>Menentukan alpha</p>";
+            output += "<p>alpha = arctan(y/x)<br>";
+            output += "alpha = arctan(" + y + "/" + x + ") = " + to_degree(alpha).toFixed(3) + "</p>";
+
+            output += "<p>Menentukan arah angin(dd)</p>";
+if (x > 0 && y > 0) {
+    output += "dd = 90 - alpha<br>";
+    output += "dd = 90 - " + to_degree(alpha).toFixed(3) + " = <strong>" + dd + " derajat</strong>";
+} else if (x < 0 && y > 0) {
+    output += "dd = 270 + alpha<br>";
+    output += "dd = 270 + " + to_degree(alpha).toFixed(3) + " = <strong>" + dd + " derajat</strong>";
+} else if (x > 0 && y < 0) {
+    output += "dd = 90 + alpha<br>";
+    output += "dd = 90 + " + to_degree(alpha).toFixed(3) + " = <strong>" + dd + " derajat</strong>";
+} else if (x < 0 && y < 0) {
+    output += "dd = 270 - alpha<br>";
+    output += "dd = 270 - " + to_degree(alpha).toFixed(3) + " = <strong>" + dd + " derajat</strong>";
+}
+
+output += "<p>Menentukan kecepatan angin fff</p>";
+output += "<p>fff = 2 * sqrt(x^2 + y^2)<br>";
+output += "fff = 2 * sqrt(" + x + "^2 + " + y + "^2) = <strong>" + ff + " knot</strong></p>";
+
+output += "<p>Sandi = <strong>" + sdd.toString().padStart(3, '0') + sff.toString().padStart(2, '0') + "</strong></p>";
+
+
+            document.getElementById("output").innerHTML = output;
+        }
+    </script>
+</body>
+</html>
